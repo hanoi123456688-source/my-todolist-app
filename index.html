@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sổ Tay Công Việc - To-Do List</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome cho icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="light-theme">
+    <div class="app-container">
+        <!-- Sidebar điều hướng & Danh mục -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-check-double"></i>
+                </div>
+                <div>
+                    <h1>MyTasks</h1>
+                    <span class="subtitle">Quản lý mục tiêu cá nhân</span>
+                </div>
+            </div>
+
+            <!-- Thống kê nhanh -->
+            <div class="stats-card">
+                <div class="stats-header">
+                    <span>Tiến độ hoàn thành</span>
+                    <strong id="progress-percent">0%</strong>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+                </div>
+                <div class="stats-counts">
+                    <span><i class="fa-solid fa-circle-check"></i> <span id="completed-count">0</span> xong</span>
+                    <span><i class="fa-solid fa-clock"></i> <span id="pending-count">0</span> chờ</span>
+                </div>
+            </div>
+
+            <!-- Bộ lọc trạng thái -->
+            <nav class="nav-filters">
+                <p class="nav-title">TRẠNG THÁI</p>
+                <button class="nav-btn active" data-filter="all">
+                    <i class="fa-solid fa-list-ul"></i>
+                    <span>Tất cả công việc</span>
+                    <span class="badge" id="badge-all">0</span>
+                </button>
+                <button class="nav-btn" data-filter="today">
+                    <i class="fa-solid fa-calendar-day"></i>
+                    <span>Hôm nay</span>
+                    <span class="badge" id="badge-today">0</span>
+                </button>
+                <button class="nav-btn" data-filter="pending">
+                    <i class="fa-regular fa-circle-dot"></i>
+                    <span>Chưa hoàn thành</span>
+                    <span class="badge" id="badge-pending">0</span>
+                </button>
+                <button class="nav-btn" data-filter="completed">
+                    <i class="fa-solid fa-check"></i>
+                    <span>Đã hoàn thành</span>
+                    <span class="badge" id="badge-completed">0</span>
+                </button>
+            </nav>
+
+            <!-- Danh mục / Nhãn -->
+            <div class="categories-section">
+                <p class="nav-title">DANH MỤC</p>
+                <ul class="category-list" id="category-filter-list">
+                    <li class="cat-item active" data-category="all">
+                        <span class="cat-dot dot-all"></span> Tất cả
+                    </li>
+                    <li class="cat-item" data-category="work">
+                        <span class="cat-dot dot-work"></span> Công việc
+                    </li>
+                    <li class="cat-item" data-category="study">
+                        <span class="cat-dot dot-study"></span> Học tập
+                    </li>
+                    <li class="cat-item" data-category="personal">
+                        <span class="cat-dot dot-personal"></span> Cá nhân
+                    </li>
+                    <li class="cat-item" data-category="health">
+                        <span class="cat-dot dot-health"></span> Sức khỏe
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Công cụ tiện ích (Backup / Restore / Theme) -->
+            <div class="sidebar-footer">
+                <button id="theme-toggle" class="btn-tool" title="Đổi giao diện Sáng / Tối">
+                    <i class="fa-solid fa-moon"></i>
+                    <span id="theme-label">Chế độ tối</span>
+                </button>
+                <div class="data-tools">
+                    <button id="btn-export" class="btn-subtool" title="Sao lưu dữ liệu ra file JSON">
+                        <i class="fa-solid fa-download"></i> Lưu file
+                    </button>
+                    <button id="btn-import-trigger" class="btn-subtool" title="Phục hồi dữ liệu từ file JSON">
+                        <i class="fa-solid fa-upload"></i> Nhập file
+                    </button>
+                    <input type="file" id="file-import" accept=".json" style="display: none;">
+                </div>
+            </div>
+        </aside>
+
+        <!-- Khung nội dung chính -->
+        <main class="main-content">
+            <!-- Header phía trên -->
+            <header class="top-header">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search-input" placeholder="Tìm kiếm công việc theo tên hoặc nhãn...">
+                    <button id="clear-search" class="clear-btn" style="display: none;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="header-actions">
+                    <div class="sort-select-wrapper">
+                        <i class="fa-solid fa-arrow-down-short-wide"></i>
+                        <select id="sort-select">
+                            <option value="newest">Mới tạo nhất</option>
+                            <option value="oldest">Cũ nhất</option>
+                            <option value="deadline">Hạn chót gần nhất</option>
+                            <option value="priority">Ưu tiên cao nhất</option>
+                        </select>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Khung nhập công việc mới -->
+            <section class="task-creator-card">
+                <form id="task-form">
+                    <div class="input-main-row">
+                        <input type="text" id="task-title-input" placeholder="Thêm việc cần làm mới... (Nhấn Enter hoặc Thêm)" required autofocus autocomplete="off">
+                        <button type="submit" class="btn-primary">
+                            <i class="fa-solid fa-plus"></i> Thêm việc
+                        </button>
+                    </div>
+
+                    <!-- Lựa chọn mở rộng cho Task -->
+                    <div class="input-details-row">
+                        <div class="detail-field">
+                            <label><i class="fa-solid fa-tag"></i> Danh mục:</label>
+                            <select id="task-category-select">
+                                <option value="work">Công việc</option>
+                                <option value="study">Học tập</option>
+                                <option value="personal">Cá nhân</option>
+                                <option value="health">Sức khỏe</option>
+                            </select>
+                        </div>
+
+                        <div class="detail-field">
+                            <label><i class="fa-solid fa-flag"></i> Ưu tiên:</label>
+                            <select id="task-priority-select">
+                                <option value="medium">Trung bình</option>
+                                <option value="high">Cao</option>
+                                <option value="low">Thấp</option>
+                            </select>
+                        </div>
+
+                        <div class="detail-field">
+                            <label><i class="fa-solid fa-calendar"></i> Hạn chót:</label>
+                            <input type="datetime-local" id="task-deadline-input">
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Tiêu đề danh sách & Hành động hàng loạt -->
+            <div class="list-header-bar">
+                <h2 id="current-view-title">Tất cả công việc</h2>
+                <div class="list-actions">
+                    <button id="btn-clear-completed" class="btn-text danger" title="Xóa tất cả việc đã hoàn thành">
+                        <i class="fa-regular fa-trash-can"></i> Dọn việc đã xong
+                    </button>
+                </div>
+            </div>
+
+            <!-- Danh sách công việc -->
+            <div class="task-list-container">
+                <ul class="task-list" id="task-list">
+                    <!-- Các mục công việc sẽ được render động bởi JavaScript -->
+                </ul>
+
+                <!-- Trạng thái trống khi chưa có công việc -->
+                <div class="empty-state" id="empty-state" style="display: none;">
+                    <div class="empty-icon">
+                        <i class="fa-regular fa-clipboard"></i>
+                    </div>
+                    <h3>Chưa có công việc nào</h3>
+                    <p>Hãy thêm công việc mới vào khung phía trên để bắt đầu sắp xếp ngày làm việc của bạn!</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Chỉnh sửa công việc -->
+    <div class="modal" id="edit-modal">
+        <div class="modal-overlay" id="edit-modal-overlay"></div>
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-pen-to-square"></i> Sửa công việc</h3>
+                <button class="btn-close" id="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="edit-form">
+                <input type="hidden" id="edit-task-id">
+                <div class="form-group">
+                    <label>Tên công việc:</label>
+                    <input type="text" id="edit-task-title" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Danh mục:</label>
+                        <select id="edit-task-category">
+                            <option value="work">Công việc</option>
+                            <option value="study">Học tập</option>
+                            <option value="personal">Cá nhân</option>
+                            <option value="health">Sức khỏe</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Độ ưu tiên:</label>
+                        <select id="edit-task-priority">
+                            <option value="high">Cao</option>
+                            <option value="medium">Trung bình</option>
+                            <option value="low">Thấp</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Hạn chót:</label>
+                    <input type="datetime-local" id="edit-task-deadline">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="btn-cancel-edit">Hủy</button>
+                    <button type="submit" class="btn-primary">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
